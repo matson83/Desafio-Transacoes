@@ -13,10 +13,21 @@ class TransactionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
 {
-    // Pega transações do tenant e usuário autenticado
-    $transactions = Transaction::where('user_id', auth()->id())->paginate(10);
+    $search = $request->input('search');
+
+    $query = Transaction::where('user_id', auth()->id());
+
+    if ($search) {
+        $query->where(function ($q) use ($search) {
+            $q->where('status', 'ilike', "%{$search}%")
+              ->orWhereRaw("CAST(valor AS TEXT) ILIKE ?", ["%{$search}%"]);
+        });
+    }
+
+    $transactions = $query->orderBy('created_at', 'desc')->paginate(10);
+
     return view('transactions.index', compact('transactions'));
 }
 
@@ -29,7 +40,7 @@ public function store(Request $request)
 {
     $data = $request->validate([
         'valor' => 'required|numeric|min:0.01',
-        'cpf' => new Cpf, // pode usar regra custom ou regex
+        'cpf' => new Cpf,
         'document' => 'nullable|file|mimes:pdf,jpg,jpeg,png',
         'status' => 'required|in:Em processamento,Aprovada,Negada',
     ]);
@@ -62,15 +73,19 @@ public function update(Request $request, Transaction $transaction)
     $this->authorize('update', $transaction);
 
     $data = $request->validate([
-        'value' => 'required|numeric|min:0.01',
-        'cpf' => 'required|cpf',
+        'valor' => 'required|numeric|min:0.01',
+        'cpf' => ['required', new Cpf],
         'document' => 'nullable|file|mimes:pdf,jpg,jpeg,png',
-        'status' => 'required|in:processing,approved,denied',
+        'status' => 'required|in:Em processamento,Aprovada,Negada',
     ]);
 
     if ($request->hasFile('document')) {
-        // opcional: delete o arquivo antigo
-        $data['document_path'] = $request->file('document')->store('documents');
+        $data['documento'] = $request->file('document')->store('documents','public');
+    }
+
+    if ($request->has('remove_document') && $transaction->documento) {
+        \Storage::disk('public')->delete($transaction->documento);
+        $data['documento'] = null;
     }
 
     $transaction->update($data);
@@ -81,7 +96,7 @@ public function update(Request $request, Transaction $transaction)
 public function destroy(Transaction $transaction)
 {
     $this->authorize('delete', $transaction);
-    $transaction->delete(); // Soft delete
+    $transaction->delete();
     return redirect()->route('transactions.index')->with('success', 'Transação excluída!');
 }
 
