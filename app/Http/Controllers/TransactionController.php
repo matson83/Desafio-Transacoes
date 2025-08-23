@@ -46,7 +46,7 @@ public function store(Request $request)
     ]);
 
     if ($request->hasFile('document')) {
-        $data['document_path'] = $request->file('document')->store('documents');
+        $data['documento'] = $request->file('document')->store('documents','public');
     }
 
     $data['user_id'] = auth()->id();
