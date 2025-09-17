@@ -68,6 +68,9 @@
             <a href="{{ route('transactions.index') }}" class="nav-link {{ request()->routeIs('transactions.*') ? 'active' : '' }}">
                 Transações
             </a>
+            <a href="{{ route('balanco.index') }}" class="nav-link {{ request()->routeIs('balanco.*') ? 'active' : '' }}">
+                Balanço
+            </a>
         </div>
 
         <div class="content flex-grow-1">

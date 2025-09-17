@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BalancoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Redirect;
@@ -18,7 +19,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-Route::resource('transactions', TransactionController::class);
+    Route::resource('transactions', TransactionController::class);
+
+    Route::resource('balanco', BalancoController::class);
 });
 
 require __DIR__.'/auth.php';
