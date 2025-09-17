@@ -13,7 +13,7 @@ class BalancoController extends Controller
      */
     public function index()
 {
-    $userId = auth()->id();
+    $userId = Auth::id();
 
     $entradas = Transaction::where('user_id', $userId)
                 ->where('status', 'Aprovada')
