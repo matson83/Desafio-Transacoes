@@ -73,7 +73,7 @@ public function update(Request $request, Transaction $transaction)
     $this->authorize('update', $transaction);
 
     $data = $request->validate([
-        'valor' => 'required|numeric|min:0.01',
+        'valor' => 'required|numeric',
         'cpf' => ['required', new Cpf],
         'document' => 'nullable|file|mimes:pdf,jpg,jpeg,png',
         'status' => 'required|in:Em processamento,Aprovada,Negada',
